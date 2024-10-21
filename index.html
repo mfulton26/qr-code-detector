@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QR Code Detector</title>
+  </head>
+  <body>
+    <script type="module">
+      if (!("BarcodeDetector" in globalThis)) {
+        await import("https://cdn.jsdelivr.net/npm/barcode-detector@2.2.11/+esm");
+      }
+
+      const detector = new BarcodeDetector({ formats: ["qr_code"] });
+
+      window.addEventListener(
+        "paste",
+        async ({ clipboardData: { files } }) => {
+          for (const file of files) {
+            const imageBitmap = await createImageBitmap(file);
+            const result = await detector.detect(imageBitmap);
+            for (const { rawValue } of result) {
+              const p = document.createElement("p");
+              const url = URL.parse(rawValue);
+              if (url) {
+                const a = document.createElement("a");
+                a.href = url.href;
+                a.textContent = rawValue;
+                p.append(a);
+              } else {
+                p.textContent = rawValue;
+              }
+              document.body.append(p);
+            }
+          }
+        },
+      );
+
+      document.body.innerHTML =
+        "<p>Paste your image here containing QR code(s).</p>";
+    </script>
+    <p>Loading...</p>
+  </body>
+</html>
